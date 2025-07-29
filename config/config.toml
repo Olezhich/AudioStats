@@ -1,0 +1,10 @@
+['PlayList']
+    CoverExtensions = ['.png', '.jpg'] #Album cover extensions, should be lowercase
+    CoverNames      = ['folder', 'cover', 'front'] #Album cover names, should be lowercase. The first file name from list that comes up will be used
+    #next field needed ONLY if poetry --with ML version installed
+    ApeDurationCmd  = ['ffprobe',
+        '-v', 'error',
+        '-show_entries', 'format=duration',
+        '-of', 'default=nw=1:nokey=1',
+        '{path_to_file}'] #the last arg here is the audio.ape filepath, you should use it as in example
+    
