@@ -1,6 +1,8 @@
+import time
 import cuetools
 import os
 import subprocess
+import logging
 
 from typing import Any
 from collections.abc import Iterator
@@ -16,6 +18,8 @@ except ImportError:
 
 MIN_TRACK_DURATION = 10 #Used to decide whether there are more tracks in the file or whether a new file should be started
 
+logger = logging.getLogger(__name__)
+
 def frame_t_sec(str_time : str) -> float:
     mm, ss, ff = map(float, str.split(':'))
     return mm * 60 + ss + ff / 75  # 1 frame = 1/75 sec
@@ -27,25 +31,44 @@ class PlayListHandler:
 
     def process_playlist_paths(self, playlist : list[str]) -> Iterator[AlbumDTO]:
         """Processes the playlist line by line and provides the **AlbumDTO** objects for loading into db"""
+        t_start = time.time()
+        files_total = 0
+        files_processed = 0
         for path in playlist:
             if path.endswith('.cue'):
                 album = self._process_cue(path)
-                yield album
-            else:
-                pass
+                if album:
+                    files_processed += 1
+                    yield album
+            files_total += 1
+        logger.info(f'Playlist processed in {(time.time()-t_start)*1000:.3f} ms. Files total: {files_total}, files processed: {files_processed}')
 
-    def _process_cue(self, path: str) -> AlbumDTO:
+    def _process_cue(self, path: str) -> AlbumDTO | None:
         """AlbumDTO class constructor from cue sheet data"""
-        with open(path, 'r') as f:
-            cue = cuetools.load(f)
-            current_dir = os.path.dirname(path)
-            album = AlbumDTO(title=cue.title,
-                             performer=cue.performer,
-                             year=int(cue.rem.date),
-                             path=path,
-                             cover=self._get_cover_path(current_dir),
-                             tracks=[i for i in self._process_cue_tracks(cue, current_dir)])
-            return album
+        try:
+            with open(path, 'r') as f:
+                cue = cuetools.load(f)
+                current_dir = os.path.dirname(path)
+                year = None
+                if cue.rem.date:
+                    try:
+                        year = int(cue.rem.date)
+                    except ValueError:
+                        logger.warning(f'No correct date in album: {cue.performer} - {cue.title} - {path}')
+                else:
+                    logger.warning(f'No any date in album: {cue.performer} - {cue.title} - {path}')
+                album = AlbumDTO(title=cue.title,
+                                 performer=cue.performer,
+                                 year=year,
+                                 path=path,
+                                 cover=self._get_cover_path(current_dir),
+                                 tracks=[i for i in self._process_cue_tracks(cue, current_dir)])
+                return album
+        except FileNotFoundError:
+            logger.warning(f'No such file: {path}')
+        except UnicodeDecodeError:
+            logger.warning(f'Cant read file: {path}')
+
 
     def _get_cover_path(self, current_dir: str) -> str | None:
         """returns album cover filepath"""
