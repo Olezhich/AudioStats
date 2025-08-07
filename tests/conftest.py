@@ -118,7 +118,7 @@ def processed_album_dtos():
                       path='/music/Album4/Album4.cue', cover='/music/Album4/Cover.jpg',
                       tracks=[
                           TrackDTO(f'Track 0{i + 1}', number=i + 1, path=f'/music/Album4/Side{'A' if i < 3 else 'B'}.flac',
-                                   offset=i * 5.0 * 60 if i < 3 else (i - 3) * 5.0 * 60 if LIBROSA_AVAILABLE else None,
+                                   offset=(i * 5.0 * 60 if i < 3 else (i - 3) * 5.0 * 60) if LIBROSA_AVAILABLE else None,
                                    duration=5.0 * 60 if LIBROSA_AVAILABLE else None) for i in range(5, -1, -1)])
 
     album_list.append(album2)
