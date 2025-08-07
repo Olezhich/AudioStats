@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies with Poetry
         run: |
-          poetry install --no-interaction --with dev
+          poetry install --no-interaction --with dev --without ML
 
       - name: Run tests and generate coverage report
         run: |
