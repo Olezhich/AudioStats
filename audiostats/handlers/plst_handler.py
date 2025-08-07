@@ -92,7 +92,7 @@ class PlayListHandler:
     def _process_cue_tracks(self, cue : cuetools.AlbumData, current_dir : str) -> Iterator[TrackDTO]:
         offset = 0
         for track_cue in sorted(cue.tracks, reverse=True, key=lambda x: int(x.track)):
-            offset, duration = self._get_offset_duration(track_cue, offset) if LIBROSA_AVAILABLE else None
+            offset, duration = self._get_offset_duration(track_cue, offset) if LIBROSA_AVAILABLE else None, None
             if not (title:=track_cue.title):
                 logger.warning(f'No title in track: {track_cue.track}]')
             else:

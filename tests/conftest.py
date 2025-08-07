@@ -6,6 +6,7 @@ import logging
 from cuetools import TrackData
 
 from audiostats.handlers import PlayListHandler,AlbumDTO, TrackDTO
+from audiostats.handlers.plst_handler import LIBROSA_AVAILABLE
 
 
 @pytest.fixture
@@ -86,7 +87,14 @@ def mock_get_duration(monkeypatch):
 @pytest.fixture()
 def processed_album_dtos():
     album_list = []
-    album2 = AlbumDTO(title='The Title Of Album', performer='The Performer', year=1969, path='/music/Album2/Album2.cue', cover='/music/Album2/Front.jpg',
+    if LIBROSA_AVAILABLE:
+        album2 = AlbumDTO(title='The Title Of Album', performer='The Performer', year=1969, path='/music/Album2/Album2.cue', cover='/music/Album2/Front.jpg',
                       tracks=[TrackDTO(f'Track 0{i+1}', number=i+1, path='/music/Album2/Album.flac', offset=i*5.0, duration=5.0) for i in range(4,-1,-1)])
+    else:
+        album2 = AlbumDTO(title='The Title Of Album', performer='The Performer', year=1969,
+                          path='/music/Album2/Album2.cue', cover='/music/Album2/Front.jpg',
+                          tracks=[
+                              TrackDTO(f'Track 0{i + 1}', number=i + 1, path='/music/Album2/Album.flac', offset=None,
+                                       duration=None) for i in range(4, -1, -1)])
     album_list.append(album2)
     return album_list
