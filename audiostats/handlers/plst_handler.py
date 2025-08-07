@@ -16,12 +16,12 @@ except ImportError:
     librosa = None
     LIBROSA_AVAILABLE = False
 
-MIN_TRACK_DURATION = 10 #Used to decide whether there are more tracks in the file or whether a new file should be started
+MIN_TRACK_DURATION = 0.1 #Used to decide whether there are more tracks in the file or whether a new file should be started
 
 logger = logging.getLogger(__name__)
 
 def frame_t_sec(str_time : str) -> float:
-    mm, ss, ff = map(float, str.split(':'))
+    mm, ss, ff = map(float, str_time.split(':'))
     return mm * 60 + ss + ff / 75  # 1 frame = 1/75 sec
 
 class PlayListHandler:
@@ -41,14 +41,20 @@ class PlayListHandler:
                     files_processed += 1
                     yield album
             files_total += 1
-        logger.info(f'Playlist processed in {(time.time()-t_start)*1000:.3f} ms. Files total: {files_total}, files processed: {files_processed}')
+        logger.info(f'Playlist processed in {(time.time()-t_start)*1000:.3f} ms. Files total: {files_total}, successfully processed: {files_processed}')
 
     def _process_cue(self, path: str) -> AlbumDTO | None:
         """AlbumDTO class constructor from cue sheet data"""
         try:
+            logger.debug(f'Process cue file: {path}')
             with open(path, 'r') as f:
                 cue = cuetools.load(f)
                 current_dir = os.path.dirname(path)
+
+                if not (title:=cue.title):
+                    logger.warning(f'No title in album: path={path}')
+                    return None
+
                 year = None
                 if cue.rem.date:
                     try:
@@ -57,12 +63,18 @@ class PlayListHandler:
                         logger.warning(f'No correct date in album: {cue.performer} - {cue.title} - {path}')
                 else:
                     logger.warning(f'No any date in album: {cue.performer} - {cue.title} - {path}')
-                album = AlbumDTO(title=cue.title,
+
+                album = AlbumDTO(title=title,
                                  performer=cue.performer,
                                  year=year,
                                  path=path,
                                  cover=self._get_cover_path(current_dir),
                                  tracks=[i for i in self._process_cue_tracks(cue, current_dir)])
+
+                if len(album.tracks) < 1:
+                    logger.warning(f'No tracks in album: {cue.performer} - {cue.title} - {path}')
+                    return None
+                logger.debug(f'\nSuccessfully processed: {album}')
                 return album
         except FileNotFoundError:
             logger.warning(f'No such file: {path}')
@@ -78,19 +90,22 @@ class PlayListHandler:
         return None
 
     def _process_cue_tracks(self, cue : cuetools.AlbumData, current_dir : str) -> Iterator[TrackDTO]:
-        next_offset = 0
+        offset = 0
         for track_cue in sorted(cue.tracks, reverse=True, key=lambda x: int(x.track)):
-            offset, duration = self._get_offset_duration(track_cue, next_offset) if LIBROSA_AVAILABLE else None
-            track = TrackDTO(title=track_cue.title,
+            offset, duration = self._get_offset_duration(track_cue, offset) if LIBROSA_AVAILABLE else None
+            if not (title:=track_cue.title):
+                logger.warning(f'No title in track: {track_cue.track}]')
+            else:
+                track = TrackDTO(title=title,
                              number=int(track_cue.track),
                              path=os.path.join(current_dir, track_cue.link),
                              offset=offset,
                              duration=duration)
-            yield track
+                yield track
 
     def _get_offset_duration(self, track_cue : TrackData, next_offset : float | None) -> tuple[float, float]:
         offset = frame_t_sec(track_cue.index['01']) if track_cue.index['01'] else 0
-        duration = next_offset - offset if next_offset >= MIN_TRACK_DURATION else self._get_audiofile_duration(track_cue.link)
+        duration = next_offset - offset if next_offset >= MIN_TRACK_DURATION else self._get_audiofile_duration(track_cue.link) - offset
         return offset, duration
 
     def _get_audiofile_duration(self, path_to_file: str) -> float:

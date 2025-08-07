@@ -1,7 +1,7 @@
-def test_process_playlist_paths(plst_handler_instance, playlist, mock_files):
+
+def test_process_playlist_paths(plst_handler_instance, playlist, mock_files, mock_listdir, mock_get_duration, processed_album_dtos):
     app = plst_handler_instance
 
-    res = set(i for i in app.process_playlist_paths(playlist))
-    print(type(res))
-    target = set()
-    assert res == target
+    res = [i for i in app.process_playlist_paths(playlist)]
+    target = processed_album_dtos
+    assert target == res
