@@ -16,7 +16,7 @@ except ImportError:
     librosa = None
     LIBROSA_AVAILABLE = False
 
-MIN_TRACK_DURATION = 0.1 #Used to decide whether there are more tracks in the file or whether a new file should be started
+MIN_TRACK_DURATION = 10 #Used to decide whether there are more tracks in the file or whether a new file should be started
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +92,7 @@ class PlayListHandler:
     def _process_cue_tracks(self, cue : cuetools.AlbumData, current_dir : str) -> Iterator[TrackDTO]:
         offset = 0
         for track_cue in sorted(cue.tracks, reverse=True, key=lambda x: int(x.track)):
-            offset, duration = self._get_offset_duration(track_cue, offset) if LIBROSA_AVAILABLE else None, None
+            offset, duration = self._get_offset_duration(current_dir, track_cue, offset) if LIBROSA_AVAILABLE else (None, None)
             if not (title:=track_cue.title):
                 logger.warning(f'No title in track: {track_cue.track}]')
             else:
@@ -103,9 +103,9 @@ class PlayListHandler:
                              duration=duration)
                 yield track
 
-    def _get_offset_duration(self, track_cue : TrackData, next_offset : float | None) -> tuple[float, float]:
+    def _get_offset_duration(self, current_dir : str, track_cue : TrackData, next_offset : float | None) -> tuple[float, float]:
         offset = frame_t_sec(track_cue.index['01']) if track_cue.index['01'] else 0
-        duration = next_offset - offset if next_offset >= MIN_TRACK_DURATION else self._get_audiofile_duration(track_cue.link) - offset
+        duration = next_offset - offset if next_offset >= MIN_TRACK_DURATION else self._get_audiofile_duration(os.path.join(current_dir,track_cue.link)) - offset
         return offset, duration
 
     def _get_audiofile_duration(self, path_to_file: str) -> float:
