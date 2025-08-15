@@ -12,7 +12,6 @@ from .models import AlbumDTO, TrackDTO
 try:
     import librosa
     LIBROSA_AVAILABLE = True
-    LIBROSA_AVAILABLE = False
 except ImportError:
     librosa = None
     LIBROSA_AVAILABLE = False
