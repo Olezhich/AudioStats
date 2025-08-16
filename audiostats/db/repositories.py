@@ -26,10 +26,12 @@ class AlbumRepository:
                 update_track_orm_f_dto(old_track, dto)
             else:
                 track = create_track_orm_f_dto(dto)
+                track.album = album
                 album.tracks.append(track)
 
         for track in old_tracks_by_title.values():
-            album.tracks.remove(track)
+            #album.tracks.remove(track)
+            self._session.delete(track)
 
     def find_by_title_performer(self, title : str, performer : str | None) -> Album | None:
         return self._session.query(Album).filter(Album.title == title and Album.performer == performer if performer else Album.performer.is_(None)).first()
