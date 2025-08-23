@@ -1,5 +1,10 @@
+#from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+#from sqlalchemy.orm import Session
 
 from .models import Album
 from audiostats.handlers import AlbumDTO
@@ -8,11 +13,11 @@ from audiostats.application.dto_mappers import create_album_dto_f_orm, update_al
 
 
 class AlbumRepository:
-    def __init__(self, session : Session):
+    def __init__(self, session : AsyncSession):
         self._session = session
 
-    def upsert(self, album_data : AlbumDTO):
-        album = self.find_by_title_performer(album_data.title, album_data.performer)
+    async def upsert(self, album_data : AlbumDTO):
+        album = await self.find_by_title_performer(album_data.title, album_data.performer)
 
         if not album:
             album = Album()
@@ -30,11 +35,20 @@ class AlbumRepository:
                 album.tracks.append(track)
 
         for track in old_tracks_by_title.values():
-            #album.tracks.remove(track)
-            self._session.delete(track)
+            await self._session.delete(track)
 
-    def find_by_title_performer(self, title : str, performer : str | None) -> Album | None:
-        return self._session.query(Album).filter(Album.title == title and Album.performer == performer if performer else Album.performer.is_(None)).first()
+    async def find_by_title_performer(self, title : str, performer : str | None) -> Album | None:
+        result = await self._session.execute(select(Album).where(
+            Album.title == title,
+            Album.performer == performer
+        ).options(
+        selectinload(Album.tracks)
+    ))
+        return result.scalar_one_or_none()
+        #return self._session.query(Album).filter(Album.title == title and Album.performer == performer if performer else Album.performer.is_(None)).first()
 
-    def all(self) -> list[Album]:
-        return [create_album_dto_f_orm(album) for album in self._session.scalars(select(Album)).all()]
+    async def all(self) -> list[Album]:
+        result = await self._session.scalars(select(Album).options(
+        selectinload(Album.tracks)
+    ))
+        return [create_album_dto_f_orm(album) for album in result.all()]
