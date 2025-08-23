@@ -1,8 +1,8 @@
 import logging
-import time
 from collections.abc import Iterator
 
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+#from sqlalchemy.orm import sessionmaker, Session
 from .uof import UnitOfWork
 
 from audiostats.handlers import AlbumDTO
@@ -11,18 +11,15 @@ from audiostats.handlers import AlbumDTO
 logger = logging.getLogger(__name__)
 
 class DBApi:
-    def __init__(self, session_factory : sessionmaker[Session]):
+    def __init__(self, session_factory : async_sessionmaker[AsyncSession]):
         self._session_factory = session_factory
 
-    def upsert_albums(self, albums : Iterator[AlbumDTO]):
-        with UnitOfWork(self._session_factory) as uof:
-            total, success = 0, 0
+    async def upsert_albums(self, albums : Iterator[AlbumDTO]):
+        async with UnitOfWork(self._session_factory) as uow:
             for album in albums:
-                uof.albums.upsert(album)
-                total += 1
-                success += 1
+                await uow.albums.upsert(album)
 
-    def get_all_albums(self):
-        with UnitOfWork(self._session_factory) as uof:
-            return uof.albums.all()
+    async def get_all_albums(self):
+        async with UnitOfWork(self._session_factory) as uow:
+            return await uow.albums.all()
 
