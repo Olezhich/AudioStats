@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from collections.abc import Iterator
 
@@ -14,10 +15,19 @@ class DBApi:
     def __init__(self, session_factory : async_sessionmaker[AsyncSession]):
         self._session_factory = session_factory
 
-    async def upsert_albums(self, albums : Iterator[AlbumDTO]):
+    async def _upsert_album(self, album : AlbumDTO):
         async with UnitOfWork(self._session_factory) as uow:
-            for album in albums:
-                await uow.albums.upsert(album)
+            await uow.albums.upsert(album)
+
+    async def upsert_albums(self, albums : Iterator[AlbumDTO]):
+        batch = []
+        for album in albums:
+            batch.append(self._upsert_album(album))
+            if len(batch) > 10:
+                await asyncio.gather(*batch)
+                batch.clear()
+        if batch:
+            await asyncio.gather(*batch)
 
     async def get_all_albums(self):
         async with UnitOfWork(self._session_factory) as uow:
