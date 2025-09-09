@@ -1,51 +1,72 @@
-import asyncio
 import logging
 
 import pytest
-#from sqlalchemy import create_engine
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
+from sqlalchemy.ext.asyncio import async_sessionmaker
+
+from testcontainers.postgres import PostgresContainer
 
 from audiostats.db.models import Base
 
 logger = logging.getLogger(__name__)
 
+POSTGRES_CONTAINER = None
+TEST_ENGINE = None
+
 @pytest.fixture(scope="session")
 def event_loop():
-    """Создаем event loop для тестов"""
     import asyncio
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
 
 @pytest.fixture(scope="session")
-def test_engine():
-    """Создает асинхронный engine для тестов"""
-    engine = create_async_engine(
-        "sqlite+aiosqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        echo=False,
-    )
+async def test_engine():
+    global POSTGRES_CONTAINER, TEST_ENGINE
+    POSTGRES_CONTAINER = PostgresContainer("postgres:15")
+    POSTGRES_CONTAINER.start()
+    DATABASE_URL = POSTGRES_CONTAINER.get_connection_url() \
+            .replace("postgresql://", "postgresql+asyncpg://")\
+            .replace("postgresql+psycopg2://", "postgresql+asyncpg://")
+    engine = create_async_engine(DATABASE_URL, echo=False)
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    TEST_ENGINE = engine
     return engine
 
 @pytest.fixture(scope="session")
-def test_session_factory(test_engine):
-    async def setup():
-        async with test_engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-
-    asyncio.run(setup())
-
-    return async_sessionmaker(
-        test_engine,
-        class_=AsyncSession,
-        expire_on_commit=False,
-        autoflush=False
-    )
+async def test_session_factory(test_engine):
+    engine = test_engine
+    return async_sessionmaker(bind=await engine, expire_on_commit=False)
 
 @pytest.fixture(scope="session", autouse=True)
-def cleanup(test_engine):
+async def cleanup_test_resources():
     yield
-    async def dispose():
-        await test_engine.dispose()
-    asyncio.run(dispose())
+    global TEST_ENGINE, POSTGRES_CONTAINER
+    if TEST_ENGINE:
+        await TEST_ENGINE.dispose()
+    if POSTGRES_CONTAINER:
+        POSTGRES_CONTAINER.stop()
+
+# @pytest.fixture(scope="session")
+# def test_engine():
+#     global POSTGRES_CONTAINER
+#     POSTGRES_CONTAINER = PostgresContainer("postgres:15")
+#     POSTGRES_CONTAINER.start()
+#     DATABASE_URL = POSTGRES_CONTAINER.get_connection_url() \
+#             .replace("postgresql://", "postgresql+asyncpg://")\
+#             .replace("postgresql+psycopg2://", "postgresql+asyncpg://")
+#     engine = create_async_engine(DATABASE_URL, echo=False)
+#     yield engine
+#     asyncio.run(engine.dispose())
+#     POSTGRES_CONTAINER.stop()
+#
+# @pytest.fixture(scope="session")
+# def test_session_factory(test_engine):
+#     async def setup():
+#         async with test_engine.begin() as conn:
+#                 await conn.run_sync(Base.metadata.create_all)
+#     asyncio.run(setup())
+#     return async_sessionmaker(bind=test_engine, expire_on_commit=False)
+

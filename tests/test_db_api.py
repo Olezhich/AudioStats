@@ -6,7 +6,8 @@ from tests import test_session_factory, test_engine#, setup_database
 
 @pytest.mark.asyncio
 async def test_upsert_albums(test_session_factory, processed_album_dtos):
-    api = DBApi(test_session_factory)
+    session_factory =  await test_session_factory
+    api = DBApi(session_factory)
 
     await api.upsert_albums(processed_album_dtos)
 
