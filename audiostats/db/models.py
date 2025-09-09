@@ -1,4 +1,6 @@
-from sqlalchemy import String, Integer, UniqueConstraint, ForeignKey, Float
+from datetime import datetime
+
+from sqlalchemy import String, Integer, UniqueConstraint, ForeignKey, Float, DATETIME
 from sqlalchemy.orm import declarative_base, Mapped, mapped_column, relationship
 
 Base = declarative_base()
@@ -7,7 +9,7 @@ MAX_PATH_FIELD_LEN = 200
 MAX_STR_FIELD_LEN = 50
 
 class Album(Base):
-    """Represents database line as orm object
+    """Represents **albums** table line as orm object
 
     Pair ``performer`` - ``title`` should be **unique**
 
@@ -41,7 +43,7 @@ class Album(Base):
         return f'{self.year} - {self.performer} - {self.title}'
 
 class Track(Base):
-    """Represents database line as orm object
+    """Represents **tracks** table line as orm object
 
     :ivar id: Track id
     :ivar title: Track title
@@ -54,13 +56,13 @@ class Track(Base):
     """
     __tablename__ = 'tracks'
 
-    id : Mapped[int] = mapped_column(Integer, primary_key=True) #track id
-    title : Mapped[str] = mapped_column(String(MAX_STR_FIELD_LEN), nullable=False) #track title
-    album_id : Mapped[int] = mapped_column(Integer, ForeignKey('albums.id', ondelete='CASCADE'), index=True) #album id
-    number : Mapped[int | None] = mapped_column(Integer, nullable=True) #track number in album
-    path : Mapped[str] = mapped_column(String(MAX_PATH_FIELD_LEN), nullable=True) #path to flac file with track
-    offset : Mapped[float | None] = mapped_column(Float, nullable=True) #offset from the beginning of the file to the beginning of the track
-    duration : Mapped[float | None] = mapped_column(Float, nullable=True) #track duration
+    id : Mapped[int] = mapped_column(Integer, primary_key=True)
+    title : Mapped[str] = mapped_column(String(MAX_STR_FIELD_LEN), nullable=False)
+    album_id : Mapped[int] = mapped_column(Integer, ForeignKey('albums.id', ondelete='CASCADE'), index=True)
+    number : Mapped[int | None] = mapped_column(Integer, nullable=True)
+    path : Mapped[str] = mapped_column(String(MAX_PATH_FIELD_LEN), nullable=True)
+    offset : Mapped[float | None] = mapped_column(Float, nullable=True)
+    duration : Mapped[float | None] = mapped_column(Float, nullable=True)
     album : Mapped["Album"]= relationship('Album', back_populates='tracks')
 
     def __repr__(self):
@@ -68,3 +70,17 @@ class Track(Base):
 
     def __str__(self):
         return f'{self.number} - {self.title}'
+
+
+# class AlbumStatus(Base):
+#     """Represents **album_statuses** line as orm object"""
+#
+#     __tablename__ = 'album_statuses'
+#
+#     id : Mapped[int] = mapped_column(Integer, primary_key=True)
+#     album_id : Mapped[int] = mapped_column(Integer, ForeignKey('albums.id', ondelete='CASCADE'), index=True)
+#     time_stamp : Mapped[datetime] = mapped_column(DATETIME, nullable=False)
+#     status : Mapped[]
+#     success : Mapped[]
+
+

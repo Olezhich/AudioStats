@@ -1,16 +1,15 @@
-#from sqlalchemy import select
-from sqlalchemy import select, delete
+import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-
-#from sqlalchemy.orm import Session
 
 from .models import Album
 from audiostats.handlers import AlbumDTO
 
 from audiostats.application.dto_mappers import create_album_dto_f_orm, update_album_orm_meta_f_dto, update_track_orm_f_dto, create_track_orm_f_dto
 
+
+logger = logging.getLogger(__name__)
 
 class AlbumRepository:
     def __init__(self, session : AsyncSession):
@@ -37,12 +36,13 @@ class AlbumRepository:
         for track in old_tracks_by_title.values():
             await self._session.delete(track)
 
+        logger.info(f'Album upserted: {album_data}')
+
     async def find_by_title_performer(self, title : str, performer : str | None) -> Album | None:
-        result = await self._session.execute(select(Album).where(
-            Album.title == title,
-            Album.performer == performer
-        ).options(
-        selectinload(Album.tracks)
+        result = await self._session.execute(
+            select(Album).where(
+            Album.title == title, Album.performer == performer).options(
+                selectinload(Album.tracks)
     ))
         return result.scalar_one_or_none()
         #return self._session.query(Album).filter(Album.title == title and Album.performer == performer if performer else Album.performer.is_(None)).first()
