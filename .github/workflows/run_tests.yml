@@ -45,7 +45,7 @@ jobs:
 
       - name: Migrate DB
         run: |
-          alembic upgrade head
+          python -m alembic upgrade head
 
       - name: Run tests and generate coverage report
         run: |
