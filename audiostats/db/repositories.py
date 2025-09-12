@@ -45,7 +45,6 @@ class AlbumRepository:
                 selectinload(Album.tracks)
     ))
         return result.scalar_one_or_none()
-        #return self._session.query(Album).filter(Album.title == title and Album.performer == performer if performer else Album.performer.is_(None)).first()
 
     async def all(self) -> list[Album]:
         result = await self._session.scalars(select(Album).options(

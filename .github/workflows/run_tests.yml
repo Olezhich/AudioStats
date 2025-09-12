@@ -41,11 +41,11 @@ jobs:
 
       - name: Install dependencies with Poetry
         run: |
-          poetry install --no-interaction --with dev --without ML
+          poetry install --no-interaction --with dev --with db --without ML
 
       - name: Migrate DB
         run: |
-          alembic upgrade head
+          poetry run alembic upgrade head
 
       - name: Run tests and generate coverage report
         run: |
