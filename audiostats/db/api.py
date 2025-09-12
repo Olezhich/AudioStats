@@ -2,22 +2,22 @@ import asyncio
 import logging
 from collections.abc import Iterator
 
-from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
-#from sqlalchemy.orm import sessionmaker, Session
-from .uof import UnitOfWork
+from .uow import UnitOfWork
 
 from audiostats.handlers import AlbumDTO
+from audiostats.db.session import SessionFactory
 
 
 logger = logging.getLogger(__name__)
 
 class DBApi:
-    def __init__(self, session_factory : async_sessionmaker[AsyncSession]):
-        self._session_factory = session_factory
+    def __init__(self, db_url : str):
+        self._session_factory = SessionFactory(db_url)
 
     async def _upsert_album(self, album : AlbumDTO):
-        async with UnitOfWork(self._session_factory) as uow:
-            await uow.albums.upsert(album)
+        async with self._session_factory as sf:
+            async with UnitOfWork(sf()) as uow:
+                await uow.albums.upsert(album)
 
     async def upsert_albums(self, albums : Iterator[AlbumDTO]):
         batch = []
@@ -30,6 +30,7 @@ class DBApi:
             await asyncio.gather(*batch)
 
     async def get_all_albums(self):
-        async with UnitOfWork(self._session_factory) as uow:
-            return await uow.albums.all()
+        async with self._session_factory as sf:
+            async with UnitOfWork(sf()) as uow:
+                return await uow.albums.all()
 

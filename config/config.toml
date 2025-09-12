@@ -7,4 +7,9 @@
         '-show_entries', 'format=duration',
         '-of', 'default=nw=1:nokey=1',
         '{path_to_file}'] #the last arg here is the audio.ape filepath, you should use it as in example
-    
+
+['DataBase']
+    AsyncUrl = 'postgresql+asyncpg://user:pass@localhost:5433/audiostats'  #DB url with async driver, used to exchange the data with db
+    SyncUrl  = 'postgresql+psycopg2://user:pass@localhost:5433/audiostats' #DB url with sync driver, used for migrations
+    UserName = 'user'
+    PassWord = 'pass'
