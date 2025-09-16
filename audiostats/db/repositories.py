@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from .models import Album
+from .models import Album, AlbumStatus
 from audiostats.handlers import AlbumDTO
 
 from audiostats.application.dto_mappers import create_album_dto_f_orm, update_album_orm_meta_f_dto, update_track_orm_f_dto, create_track_orm_f_dto
@@ -17,10 +17,12 @@ class AlbumRepository:
 
     async def upsert(self, album_data : AlbumDTO):
         album = await self.find_by_title_performer(album_data.title, album_data.performer)
+        # album_status = AlbumStatus()
 
         if not album:
             album = Album()
             self._session.add(album)
+
         update_album_orm_meta_f_dto(album, album_data)
 
         old_tracks_by_title = {track.title: track for track in album.tracks}

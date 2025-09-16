@@ -2,19 +2,6 @@ from audiostats.db import Album, Track
 
 from audiostats.handlers import AlbumDTO, TrackDTO
 
-
-# def create_album_f_dto(album : AlbumDTO) -> Album:
-#     return Album(title=album.title,
-#                 performer=album.performer,
-#                 year=album.year,
-#                 path=album.path,
-#                 cover=album.cover,
-#                 tracks=[Track(title=track.title,
-#                               number=track.number,
-#                               path=track.path,
-#                               offset=track.offset,
-#                               duration=track.duration) for track in album.tracks])
-
 def update_track_orm_f_dto(old : Track, new : TrackDTO) -> None:
     old.title = new.title
     old.number = new.number
