@@ -1,10 +1,14 @@
+from asyncio import Semaphore
+from contextlib import asynccontextmanager
+
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 
 class SessionFactory:
-    def __init__(self, db_url : str):
-        self._engine = create_async_engine(url=db_url)
+    def __init__(self, db_url : str, max_sessions : int=20):
+        self._engine = create_async_engine(url=db_url, pool_size=max_sessions, max_overflow=0)
         self._session_maker = async_sessionmaker(bind=self._engine)
+        self._semaphore = Semaphore(max_sessions)
 
     async def __aenter__(self):
         return self
@@ -12,5 +16,28 @@ class SessionFactory:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self._engine.dispose()
 
-    def __call__(self, *args, **kwargs) -> async_sessionmaker[AsyncSession]:
-        return self._session_maker
+    @asynccontextmanager
+    async def get_session(self) -> AsyncSession:
+        session = None
+        try:
+            await self._semaphore.acquire()
+            session = self._session_maker()
+            yield session
+        except Exception:
+            raise
+        finally:
+            if session:
+                await session.close()
+                self._semaphore.release()
+
+    async def __call__(self, *args, **kwargs) -> AsyncSession:
+        await self._semaphore.acquire()
+        session = self._session_maker()
+
+        async def close_session():
+            await session.close()
+            self._semaphore.release()
+
+        session.close = close_session()
+
+        return session

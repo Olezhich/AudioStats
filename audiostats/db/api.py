@@ -16,7 +16,8 @@ class DBApi:
 
     async def _upsert_album(self, album : AlbumDTO):
         async with self._session_factory as sf:
-            async with UnitOfWork(sf()) as uow:
+            unit_of_work = UnitOfWork(sf)
+            async with unit_of_work() as uow:
                 await uow.albums.upsert(album)
 
     async def upsert_albums(self, albums : Iterator[AlbumDTO]):
@@ -31,6 +32,7 @@ class DBApi:
 
     async def get_all_albums(self):
         async with self._session_factory as sf:
-            async with UnitOfWork(sf()) as uow:
+            unit_of_work = UnitOfWork(sf)
+            async with unit_of_work() as uow:
                 return await uow.albums.all()
 
