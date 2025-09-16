@@ -1,7 +1,9 @@
 from datetime import datetime
 
-from sqlalchemy import String, Integer, UniqueConstraint, ForeignKey, Float, DATETIME
+from sqlalchemy import String, Integer, UniqueConstraint, ForeignKey, Float, Enum, DateTime
 from sqlalchemy.orm import declarative_base, Mapped, mapped_column, relationship
+
+from audiostats.application import Status, Success
 
 Base = declarative_base()
 
@@ -34,7 +36,8 @@ class Album(Base):
     year : Mapped[int | None] = mapped_column(Integer, nullable=True)
     path : Mapped[str | None] = mapped_column(String(MAX_PATH_FIELD_LEN), nullable=True)
     cover : Mapped[str | None] = mapped_column(String(MAX_PATH_FIELD_LEN), nullable=True)
-    tracks : Mapped[list['Track']] = relationship('Track', back_populates='album')
+    tracks : Mapped[list['Track']] = relationship('Track', back_populates='album', lazy='noload')
+    album_statuses : Mapped[list['AlbumStatus']] = relationship('AlbumStatus', back_populates='album', lazy='noload')
 
     def __repr__(self):
         return f'<Album(year={self.year}, performer={self.performer}, title={self.title})>'
@@ -63,7 +66,7 @@ class Track(Base):
     path : Mapped[str] = mapped_column(String(MAX_PATH_FIELD_LEN), nullable=True)
     offset : Mapped[float | None] = mapped_column(Float, nullable=True)
     duration : Mapped[float | None] = mapped_column(Float, nullable=True)
-    album : Mapped["Album"]= relationship('Album', back_populates='tracks')
+    album : Mapped["Album"]= relationship('Album', back_populates='tracks', lazy='noload')
 
     def __repr__(self):
         return f'<Track(title={self.title}, album_id={self.album_id}, number={self.number})>'
@@ -72,15 +75,18 @@ class Track(Base):
         return f'{self.number} - {self.title}'
 
 
-# class AlbumStatus(Base):
-#     """Represents **album_statuses** line as orm object"""
-#
-#     __tablename__ = 'album_statuses'
-#
-#     id : Mapped[int] = mapped_column(Integer, primary_key=True)
-#     album_id : Mapped[int] = mapped_column(Integer, ForeignKey('albums.id', ondelete='CASCADE'), index=True)
-#     time_stamp : Mapped[datetime] = mapped_column(DATETIME, nullable=False)
-#     status : Mapped[]
-#     success : Mapped[]
+class AlbumStatus(Base):
+    """Represents **album_statuses** line as orm object"""
+
+    __tablename__ = 'album_statuses'
+
+    id : Mapped[int] = mapped_column(Integer, primary_key=True)
+    album_id : Mapped[int] = mapped_column(Integer, ForeignKey('albums.id', ondelete='CASCADE'), index=True)
+    time_stamp : Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    status : Mapped[Status] = mapped_column(Enum(Status), nullable=False)
+    success : Mapped[Success] = mapped_column(Enum(Success), nullable=False)
+    album : Mapped["Album"] = relationship('Album', back_populates='album_statuses', lazy='noload')
+
+
 
 
