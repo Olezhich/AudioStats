@@ -5,9 +5,9 @@ import logging
 
 from cuetools import TrackData
 
-from audiostats.handlers import PlayListHandler,AlbumDTO, TrackDTO
+from audiostats.handlers import PlayListHandler,AlbumDTO, TrackDTO, StatusDTO
 from audiostats.handlers.plst_handler import LIBROSA_AVAILABLE
-
+from audiostats.domain import Status, Success
 
 @pytest.fixture
 def plst_handler_instance():
@@ -125,3 +125,8 @@ def processed_album_dtos():
     album_list.append(album3)
     album_list.append(album4)
     return album_list
+
+@pytest.fixture()
+def processed_album_dtos_w_status(processed_album_dtos):
+    for i in processed_album_dtos:
+        i.statuses=[StatusDTO(status=Status.ADDED, success=Success.SUCCESS)]

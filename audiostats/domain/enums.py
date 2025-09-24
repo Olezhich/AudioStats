@@ -8,4 +8,3 @@ class Success(StrEnum):
     SUCCESS = 'success'
     WARNING = 'warning'
     ERROR = 'error'
-
