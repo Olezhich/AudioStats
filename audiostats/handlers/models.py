@@ -1,5 +1,14 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
+from audiostats.domain import Status, Success
+
+@dataclass(slots=True)
+class StatusDTO:
+    status : Status
+    success : Success
+
+    def __repr__(self):
+        return f'<StatusDTO(status={self.status}, success={self.success})>'
 
 @dataclass(slots=True)
 class TrackDTO:
@@ -20,10 +29,12 @@ class AlbumDTO:
     path : str | None
     cover : str | None
     tracks : list[TrackDTO]
+    statuses : list[StatusDTO] = field(default_factory=list)
 
     def __repr__(self):
         return f'''\n<AlbumDTO(title={self.title}, performer={self.performer}, year={self.year}, path={self.path}, cover={self.cover},
 {'\n'.join(['\t' + repr(i) for i in self.tracks])}
+{'\n'.join(['\t' + repr(i) for i in self.statuses])}
 )>'''
 
     

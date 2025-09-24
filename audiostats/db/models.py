@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from sqlalchemy import String, Integer, UniqueConstraint, ForeignKey, Float, Enum, DateTime
+from sqlalchemy import String, Integer, UniqueConstraint, ForeignKey, Float, Enum, DateTime, func
 from sqlalchemy.orm import declarative_base, Mapped, mapped_column, relationship
 
-from audiostats.application import Status, Success
+from audiostats.domain import Status, Success
 
 Base = declarative_base()
 
@@ -82,7 +82,7 @@ class AlbumStatus(Base):
 
     id : Mapped[int] = mapped_column(Integer, primary_key=True)
     album_id : Mapped[int] = mapped_column(Integer, ForeignKey('albums.id', ondelete='CASCADE'), index=True)
-    time_stamp : Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    time_stamp : Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), default=func.now())
     status : Mapped[Status] = mapped_column(Enum(Status), nullable=False)
     success : Mapped[Success] = mapped_column(Enum(Success), nullable=False)
     album : Mapped["Album"] = relationship('Album', back_populates='album_statuses', lazy='noload')
