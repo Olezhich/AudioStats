@@ -129,4 +129,4 @@ def processed_album_dtos():
 @pytest.fixture()
 def processed_album_dtos_w_status(processed_album_dtos):
     for i in processed_album_dtos:
-        i.statuses=[StatusDTO(status=Status.ADDED, success=Success.SUCCESS)]
+        i.statuses.append(StatusDTO(status=Status.ADDED, success=Success.SUCCESS))

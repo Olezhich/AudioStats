@@ -36,3 +36,9 @@ class DBApi:
             async with unit_of_work() as uow:
                 return await uow.albums.all()
 
+    async def get_all_albums_w_status(self):
+        async with self._session_factory as sf:
+            unit_of_work = UnitOfWork(sf)
+            async with unit_of_work() as uow:
+                return await uow.albums.all_w_status()
+
