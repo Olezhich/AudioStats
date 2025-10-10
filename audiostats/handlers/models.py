@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 
 from audiostats.domain import Status, Success
 
@@ -6,6 +7,12 @@ from audiostats.domain import Status, Success
 class StatusDTO:
     status : Status
     success : Success
+    # timestamp : datetime | None = field(default=None, compare=False)
+
+    # def __eq__(self, other):
+    #     if not isinstance(other, StatusDTO):
+    #         return NotImplemented
+    #     return self.status == other.status and self.success == other.success
 
     def __repr__(self):
         return f'<StatusDTO(status={self.status}, success={self.success})>'
