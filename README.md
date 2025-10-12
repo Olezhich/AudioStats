@@ -7,8 +7,10 @@
 
 ## Features
 - Collecting album and track metadata into db
+- Tracking album changes
 - Working with `flac` + `cue` music libraries
 
 ## Technologies
-- `SqlAlchemy orm`
-- `Asyncio`
+- `SqlAlchemy orm` for interacting with a db
+- `Asyncio` for using async requests via `asyncpg` driver
+- `PostgreSQL` as db
