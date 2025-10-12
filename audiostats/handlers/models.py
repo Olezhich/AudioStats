@@ -1,23 +1,17 @@
+from collections import Counter
 from dataclasses import dataclass, field
-from datetime import datetime
 
 from audiostats.domain import Status, Success
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class StatusDTO:
     status : Status
     success : Success
-    # timestamp : datetime | None = field(default=None, compare=False)
-
-    # def __eq__(self, other):
-    #     if not isinstance(other, StatusDTO):
-    #         return NotImplemented
-    #     return self.status == other.status and self.success == other.success
 
     def __repr__(self):
         return f'<StatusDTO(status={self.status}, success={self.success})>'
 
-@dataclass(slots=True)
+@dataclass(slots=True, frozen=True)
 class TrackDTO:
     title : str
     number : int | None
@@ -43,5 +37,18 @@ class AlbumDTO:
 {'\n'.join(['\t' + repr(i) for i in self.tracks])}
 {'\n'.join(['\t' + repr(i) for i in self.statuses])}
 )>'''
+
+    def __eq__(self, other):
+        if not isinstance(other, AlbumDTO):
+            return False
+        return (
+                self.title == other.title
+                and self.performer == other.performer
+                and self.year == other.year
+                and self.path == other.path
+                and self.cover == other.cover
+                and Counter(self.tracks) == Counter(other.tracks)
+                and Counter(self.statuses) == Counter(other.statuses)
+        )
 
     

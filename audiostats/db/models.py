@@ -76,7 +76,15 @@ class Track(Base):
 
 
 class AlbumStatus(Base):
-    """Represents **album_statuses** line as orm object"""
+    """Represents **album_statuses** table line as orm object
+
+    :ivar id: AlbumStatus id
+    :ivar album_id: Album id
+    :ivar time_stamp: timestamp when the entry was added
+    :ivar status: insertion status, may be `added` or `modified`
+    :ivar success: processing success, may be `success` or `warning` if there was a warning while process the album cue
+    :ivar album: Relationship to the parent album
+    """
 
     __tablename__ = 'album_statuses'
 
