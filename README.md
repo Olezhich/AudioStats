@@ -1,5 +1,5 @@
 # AudioStats
-[![Tests](https://github.com/Olezhich/AudioStats/actions/workflows/Run%20Tests%20on%20PR.yml/badge.svg)](https://github.com/Olezhich/AudioStats/actions )
+[![Tests](https://github.com/Olezhich/AudioStats/workflows/Tests/badge.svg)](https://github.com/Olezhich/AudioStats/actions )
 [![Coverage Status](https://coveralls.io/repos/github/Olezhich/AudioStats/badge.svg?branch=dev)](https://coveralls.io/github/Olezhich/AudioStats?branch=dev)
 [![License](https://img.shields.io/github/license/Olezhich/AudioStats )](https://github.com/Olezhich/AudioStats/blob/main/LICENSE )
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue)](https://python.org)  
