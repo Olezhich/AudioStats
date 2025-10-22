@@ -4,21 +4,24 @@ import os
 import subprocess
 import logging
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from collections.abc import Iterator
 from cuetools import TrackData
 from types import ModuleType
 
 from .models import AlbumDTO, TrackDTO
 
-librosa: ModuleType | None
+librosa: ModuleType | None = None
 LIBROSA_AVAILABLE = False
 
 try:
-    import librosa
+    #import librosa
+    import librosa as _librosa
+    librosa = _librosa
+
     LIBROSA_AVAILABLE = True
 except ImportError:
-    librosa = None
+    pass
 
 MIN_TRACK_DURATION = 10 #Used to decide whether there are more tracks in the file or whether a new file should be started
 
