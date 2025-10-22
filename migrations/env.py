@@ -16,7 +16,11 @@ load_dotenv()
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option('sqlalchemy.url', os.getenv('SYNC_DB_URL'))
+# get config from env
+sync_db_url = os.getenv('SYNC_DB_URL')
+if not sync_db_url:
+    raise ValueError('SYNC_DB_URL env variable is required for Alembic')
+config.set_main_option('sqlalchemy.url', sync_db_url)
 
 
 # Interpret the config file for Python logging.

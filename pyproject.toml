@@ -32,6 +32,11 @@ pytest = "^8.4.1"
 pytest-cov = "^6.2.1"
 pytest-asyncio = "^1.1.0"
 dotenv = "^0.9.9"
+mypy = "^1.18.2"
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests/"]

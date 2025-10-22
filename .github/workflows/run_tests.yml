@@ -3,9 +3,11 @@ name: Run Tests on PR
 on:
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - 'README.md'
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
     
     env:
@@ -28,7 +30,8 @@ jobs:
           --health-retries 5
     
     steps:
-      - uses: actions/checkout@v4
+      - name: Get repository code
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -47,9 +50,13 @@ jobs:
         run: |
           poetry run alembic upgrade head
 
+      - name: Run Mypy check
+        run: |
+          poetry run mypy .
+
       - name: Run tests and generate coverage report
         run: |
-          poetry run pytest --cov=audiostats --cov-report=lcov tests/
+          poetry run pytest --cov-report=lcov tests/
 
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@master
