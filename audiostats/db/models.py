@@ -1,14 +1,15 @@
 from datetime import datetime
 
 from sqlalchemy import String, Integer, UniqueConstraint, ForeignKey, Float, Enum, DateTime, func
-from sqlalchemy.orm import declarative_base, Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 
 from audiostats.domain import Status, Success
 
-Base = declarative_base()
-
 MAX_PATH_FIELD_LEN = 200
 MAX_STR_FIELD_LEN = 50
+
+class Base(DeclarativeBase):
+    ...
 
 class Album(Base):
     """Represents **albums** table line as orm object

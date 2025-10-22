@@ -7,14 +7,18 @@ import logging
 from typing import Any
 from collections.abc import Iterator
 from cuetools import TrackData
+from types import ModuleType
+
 from .models import AlbumDTO, TrackDTO
+
+librosa: ModuleType | None
+LIBROSA_AVAILABLE = False
 
 try:
     import librosa
     LIBROSA_AVAILABLE = True
 except ImportError:
     librosa = None
-    LIBROSA_AVAILABLE = False
 
 MIN_TRACK_DURATION = 10 #Used to decide whether there are more tracks in the file or whether a new file should be started
 
@@ -78,8 +82,10 @@ class PlayListHandler:
                 return album
         except FileNotFoundError:
             logger.warning(f'No such file: {path}')
+            return None
         except UnicodeDecodeError:
             logger.warning(f'Cant read file: {path}')
+            return None
 
 
     def _get_cover_path(self, current_dir: str) -> str | None:
@@ -90,29 +96,32 @@ class PlayListHandler:
         return None
 
     def _process_cue_tracks(self, cue : cuetools.AlbumData, current_dir : str) -> Iterator[TrackDTO]:
-        offset = 0
+        offset: float = 0
+        duration: float
         for track_cue in sorted(cue.tracks, reverse=True, key=lambda x: int(x.track)):
-            offset, duration = self._get_offset_duration(current_dir, track_cue, offset) if LIBROSA_AVAILABLE else (None, None)
+            offset, duration = self._get_offset_duration(current_dir, track_cue, offset) if LIBROSA_AVAILABLE else (0.0,0.0)
             if not (title:=track_cue.title):
                 logger.warning(f'No title in track: {track_cue.track}]')
             else:
                 track = TrackDTO(title=title,
                              number=int(track_cue.track),
                              path=os.path.join(current_dir, track_cue.link),
-                             offset=offset,
-                             duration=duration)
+                             offset=offset if LIBROSA_AVAILABLE else None,
+                             duration=duration if LIBROSA_AVAILABLE else None)
                 yield track
 
     def _get_offset_duration(self, current_dir : str, track_cue : TrackData, next_offset : float | None) -> tuple[float, float]:
         offset = frame_t_sec(track_cue.index['01']) if track_cue.index['01'] else 0
-        duration = next_offset - offset if next_offset >= MIN_TRACK_DURATION else self._get_audiofile_duration(os.path.join(current_dir,track_cue.link)) - offset
+        duration = next_offset - offset if next_offset is not None and next_offset >= MIN_TRACK_DURATION else self._get_audiofile_duration(os.path.join(current_dir,track_cue.link)) - offset
         return offset, duration
 
     def _get_audiofile_duration(self, path_to_file: str) -> float:
         if path_to_file.endswith('.ape'):
             return self._get_ape_duration(path_to_file)
         else:
-            return librosa.get_duration(path=path_to_file)
+            if librosa is not None:
+                return librosa.get_duration(path=path_to_file)
+            raise RuntimeError('librosa is unavailable')
 
     def _get_ape_duration(self, path_to_file: str) -> float:
         result = subprocess.run(

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class DBApi:
     def __init__(self, db_url : str, workers : int = 5, queue_sz : int = 10):
         self._session_factory = SessionFactory(db_url)
-        self._queue = asyncio.Queue(maxsize=queue_sz)
+        self._queue: asyncio.Queue[AlbumDTO | None] = asyncio.Queue(maxsize=queue_sz)
         self._num_workers = workers
 
     async def _album_upserter(self):
