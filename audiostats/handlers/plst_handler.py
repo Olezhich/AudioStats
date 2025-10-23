@@ -4,7 +4,7 @@ import os
 import subprocess
 import logging
 
-from typing import Any, TYPE_CHECKING
+from typing import Any
 from collections.abc import Iterator
 from cuetools import TrackData
 from types import ModuleType

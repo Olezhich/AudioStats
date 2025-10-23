@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 
 from .repositories import AlbumRepository
@@ -27,19 +27,4 @@ class UnitOfWork:
             except Exception:
                 await self._session.rollback()
                 raise
-
-    # async def __aenter__(self):
-    #     async with self._session_factory as sf:
-    #         await self._session = sf.get_session()
-    #     self.albums = AlbumRepository(self._session)
-    #     logger.debug(f'AlbumRepo initialised: {self.albums}, Current Session: {self._session}')
-    #     return self
-    #
-    # async def __aexit__(self, exc_type, exc_val, exc_tb):
-    #     if exc_type is not None:
-    #         await self._session.rollback()
-    #     else:
-    #         await self._session.commit()
-    #     await self._session.close()
-    #     logger.debug(f'Session closed')
 

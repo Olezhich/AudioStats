@@ -1,6 +1,6 @@
 from audiostats.db.models import Album, Track
 
-from audiostats.handlers import AlbumDTO, TrackDTO, StatusDTO
+from audiostats.handlers.models import AlbumDTO, TrackDTO, StatusDTO
 
 def update_track_orm_f_dto(old : Track, new : TrackDTO) -> None:
     old.title = new.title
