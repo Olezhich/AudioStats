@@ -6,8 +6,8 @@ import logging
 import copy
 
 from audiostats.db.api import DBApi
-from audiostats.handlers import TrackDTO, StatusDTO
-from audiostats.domain import Status, Success
+from audiostats.handlers.models import TrackDTO, StatusDTO
+from audiostats.domain.enums import Status, Success
 
 logger = logging.getLogger(__name__)
 

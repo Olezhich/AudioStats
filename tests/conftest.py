@@ -5,9 +5,9 @@ import logging
 
 from cuetools import TrackData
 
-from audiostats.handlers import PlayListHandler,AlbumDTO, TrackDTO, StatusDTO
-from audiostats.handlers.plst_handler import LIBROSA_AVAILABLE
-from audiostats.domain import Status, Success
+from audiostats.handlers.plst_handler import PlayListHandler, LIBROSA_AVAILABLE
+from audiostats.handlers.models import AlbumDTO, TrackDTO, StatusDTO
+from audiostats.domain.enums import Status, Success
 
 @pytest.fixture
 def plst_handler_instance():
@@ -42,15 +42,15 @@ def mock_files(monkeypatch):
                 if filename == '/music/Album1/Album1.cue':
                     return ''
                 if filename == '/music/Album2/Album2.cue':
-                    tracks = [TrackData(index={f'01' : f'{i//2}{(i%2)*5}:00:00'}, track=f'0{i+1}', title=f'Track 0{i+1}', link='Album.flac') for i in range(5)]
+                    tracks = [TrackData(index={'01' : f'{i//2}{(i%2)*5}:00:00'}, track=f'0{i+1}', title=f'Track 0{i+1}', link='Album.flac') for i in range(5)]
                     cue_sheet = cuetools.AlbumData(performer='The Performer',title='The Title Of Album2', rem=cuetools.RemData(genre='Rock', date='1969'), tracks=tracks)
                     return cuetools.dumps(cue_sheet)
                 if filename == '/music/Album3/Album3.cue':
-                    tracks = [TrackData(index={f'01' : f'00:00:00'}, track=f'0{i+1}', title=f'Track 0{i+1}', link=f'Track0{i+1}.flac') for i in range(5)]
+                    tracks = [TrackData(index={'01' : '00:00:00'}, track=f'0{i+1}', title=f'Track 0{i+1}', link=f'Track0{i+1}.flac') for i in range(5)]
                     cue_sheet = cuetools.AlbumData(performer='The Performer',title='The Title Of Album3', rem=cuetools.RemData(genre='Rock', date='1969'), tracks=tracks)
                     return cuetools.dumps(cue_sheet)
                 if filename == '/music/Album4/Album4.cue':
-                    tracks = [TrackData(index={f'01' : f'{(i%3)//2}{((i%3)%2)*5}:00:00'}, track=f'0{i+1}', title=f'Track 0{i+1}', link=f'Side{'A' if i < 3 else 'B'}.flac') for i in range(6)]
+                    tracks = [TrackData(index={'01' : f'{(i%3)//2}{((i%3)%2)*5}:00:00'}, track=f'0{i+1}', title=f'Track 0{i+1}', link=f'Side{'A' if i < 3 else 'B'}.flac') for i in range(6)]
                     cue_sheet = cuetools.AlbumData(performer='The Performer',title='The Title Of Album4', rem=cuetools.RemData(genre='Rock', date='1970'), tracks=tracks)
                     return cuetools.dumps(cue_sheet)
                 else:
@@ -96,7 +96,7 @@ def mock_get_duration(monkeypatch):
     def mock_duration(self, path_to_file: str) -> float:
         return duration_map.get(path_to_file)
 
-    from audiostats.handlers import PlayListHandler
+    from audiostats.handlers.plst_handler import PlayListHandler
     monkeypatch.setattr(PlayListHandler, '_get_audiofile_duration', mock_duration)
 
 @pytest.fixture()

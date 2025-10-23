@@ -1,7 +1,7 @@
 from collections import Counter
 from dataclasses import dataclass, field
 
-from audiostats.domain import Status, Success
+from audiostats.domain.enums import Status, Success
 
 @dataclass(slots=True, frozen=True)
 class StatusDTO:

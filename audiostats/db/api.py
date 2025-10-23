@@ -4,7 +4,7 @@ from collections.abc import Iterator
 
 from .uow import UnitOfWork
 
-from audiostats.handlers import AlbumDTO
+from audiostats.handlers.models import AlbumDTO
 from audiostats.db.session import SessionFactory
 
 

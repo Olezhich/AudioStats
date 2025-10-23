@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import String, Integer, UniqueConstraint, ForeignKey, Float, Enum, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 
-from audiostats.domain import Status, Success
+from audiostats.domain.enums import Status, Success
 
 MAX_PATH_FIELD_LEN = 200
 MAX_STR_FIELD_LEN = 50
