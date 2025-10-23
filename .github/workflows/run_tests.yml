@@ -48,6 +48,10 @@ jobs:
         run: |
           poetry run alembic upgrade head
 
+      - name: Run Ruff linter check
+        run: |
+          poetry run ruff check .
+
       - name: Run Mypy check
         run: |
           poetry run mypy .
