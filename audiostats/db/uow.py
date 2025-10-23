@@ -8,12 +8,13 @@ from .session import SessionFactory
 
 logger = logging.getLogger(__name__)
 
+
 class UnitOfWork:
     def __init__(self, session_factory: SessionFactory):
         self._session_factory = session_factory
-        self._session : AsyncSession | None = None
+        self._session: AsyncSession | None = None
 
-        self.albums : AlbumRepository | None = None
+        self.albums: AlbumRepository | None = None
         logger.debug(f'UoF initialized: {self}')
 
     @asynccontextmanager
@@ -27,4 +28,3 @@ class UnitOfWork:
             except Exception:
                 await self._session.rollback()
                 raise
-

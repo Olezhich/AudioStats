@@ -38,6 +38,9 @@ ruff = "^0.14.1"
 [tool.ruff]
 target-version = "py312"
 
+[tool.ruff.format]
+quote-style = "single"
+
 [tool.mypy]
 python_version = "3.12"
 ignore_missing_imports = true

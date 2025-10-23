@@ -10,8 +10,9 @@ from audiostats.db.session import SessionFactory
 
 logger = logging.getLogger(__name__)
 
+
 class DBApi:
-    def __init__(self, db_url : str, workers : int = 5, queue_sz : int = 10):
+    def __init__(self, db_url: str, workers: int = 5, queue_sz: int = 10):
         self._session_factory = SessionFactory(db_url)
         self._queue: asyncio.Queue[AlbumDTO | None] = asyncio.Queue(maxsize=queue_sz)
         self._num_workers = workers
@@ -29,8 +30,11 @@ class DBApi:
                     finally:
                         self._queue.task_done()
 
-    async def upsert_albums(self, albums : Iterator[AlbumDTO]):
-        workers = [asyncio.create_task(self._album_upserter()) for _ in range(self._num_workers)]
+    async def upsert_albums(self, albums: Iterator[AlbumDTO]):
+        workers = [
+            asyncio.create_task(self._album_upserter())
+            for _ in range(self._num_workers)
+        ]
 
         for album in albums:
             await self._queue.put(album)
@@ -53,4 +57,3 @@ class DBApi:
             unit_of_work = UnitOfWork(sf)
             async with unit_of_work() as uow:
                 return await uow.albums.all_w_status()
-

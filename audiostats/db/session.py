@@ -6,8 +6,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 
 
 class SessionFactory:
-    def __init__(self, db_url : str, max_sessions : int=20):
-        self._engine = create_async_engine(url=db_url, pool_size=max_sessions, max_overflow=0)
+    def __init__(self, db_url: str, max_sessions: int = 20):
+        self._engine = create_async_engine(
+            url=db_url, pool_size=max_sessions, max_overflow=0
+        )
         self._session_maker = async_sessionmaker(bind=self._engine)
         self._semaphore = Semaphore(max_sessions)
 
@@ -30,15 +32,3 @@ class SessionFactory:
             if session:
                 await session.close()
                 self._semaphore.release()
-
-    # async def __call__(self, *args, **kwargs) -> AsyncSession:
-    #     await self._semaphore.acquire()
-    #     session = self._session_maker()
-    #
-    #     async def close_session():
-    #         await session.close()
-    #         self._semaphore.release()
-    #
-    #     session.close = close_session()
-    #
-    #     return session
