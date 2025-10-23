@@ -1,6 +1,15 @@
 from datetime import datetime
 
-from sqlalchemy import String, Integer, UniqueConstraint, ForeignKey, Float, Enum, DateTime, func
+from sqlalchemy import (
+    String,
+    Integer,
+    UniqueConstraint,
+    ForeignKey,
+    Float,
+    Enum,
+    DateTime,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 
 from audiostats.domain.enums import Status, Success
@@ -8,8 +17,9 @@ from audiostats.domain.enums import Status, Success
 MAX_PATH_FIELD_LEN = 200
 MAX_STR_FIELD_LEN = 50
 
-class Base(DeclarativeBase):
-    ...
+
+class Base(DeclarativeBase): ...
+
 
 class Album(Base):
     """Represents **albums** table line as orm object
@@ -31,20 +41,29 @@ class Album(Base):
         UniqueConstraint('performer', 'title', name='uq_album_performer_title'),
     )
 
-    id : Mapped[int] = mapped_column(Integer, primary_key=True)
-    title : Mapped[str] = mapped_column(String(MAX_STR_FIELD_LEN), nullable=False)
-    performer : Mapped[str | None] = mapped_column(String(MAX_STR_FIELD_LEN), nullable=True)
-    year : Mapped[int | None] = mapped_column(Integer, nullable=True)
-    path : Mapped[str | None] = mapped_column(String(MAX_PATH_FIELD_LEN), nullable=True)
-    cover : Mapped[str | None] = mapped_column(String(MAX_PATH_FIELD_LEN), nullable=True)
-    tracks : Mapped[list['Track']] = relationship('Track', back_populates='album', lazy='noload')
-    album_statuses : Mapped[list['AlbumStatus']] = relationship('AlbumStatus', back_populates='album', lazy='noload')
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(MAX_STR_FIELD_LEN), nullable=False)
+    performer: Mapped[str | None] = mapped_column(
+        String(MAX_STR_FIELD_LEN), nullable=True
+    )
+    year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    path: Mapped[str | None] = mapped_column(String(MAX_PATH_FIELD_LEN), nullable=True)
+    cover: Mapped[str | None] = mapped_column(String(MAX_PATH_FIELD_LEN), nullable=True)
+    tracks: Mapped[list['Track']] = relationship(
+        'Track', back_populates='album', lazy='noload'
+    )
+    album_statuses: Mapped[list['AlbumStatus']] = relationship(
+        'AlbumStatus', back_populates='album', lazy='noload'
+    )
 
     def __repr__(self):
-        return f'<Album(year={self.year}, performer={self.performer}, title={self.title})>'
+        return (
+            f'<Album(year={self.year}, performer={self.performer}, title={self.title})>'
+        )
 
     def __str__(self):
         return f'{self.year} - {self.performer} - {self.title}'
+
 
 class Track(Base):
     """Represents **tracks** table line as orm object
@@ -58,16 +77,21 @@ class Track(Base):
     :ivar duration: Track duration `(in seconds)`
     :ivar album: Relationship to the parent album
     """
+
     __tablename__ = 'tracks'
 
-    id : Mapped[int] = mapped_column(Integer, primary_key=True)
-    title : Mapped[str] = mapped_column(String(MAX_STR_FIELD_LEN), nullable=False)
-    album_id : Mapped[int] = mapped_column(Integer, ForeignKey('albums.id', ondelete='CASCADE'), index=True)
-    number : Mapped[int | None] = mapped_column(Integer, nullable=True)
-    path : Mapped[str] = mapped_column(String(MAX_PATH_FIELD_LEN), nullable=True)
-    offset : Mapped[float | None] = mapped_column(Float, nullable=True)
-    duration : Mapped[float | None] = mapped_column(Float, nullable=True)
-    album : Mapped["Album"]= relationship('Album', back_populates='tracks', lazy='noload')
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String(MAX_STR_FIELD_LEN), nullable=False)
+    album_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey('albums.id', ondelete='CASCADE'), index=True
+    )
+    number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    path: Mapped[str] = mapped_column(String(MAX_PATH_FIELD_LEN), nullable=True)
+    offset: Mapped[float | None] = mapped_column(Float, nullable=True)
+    duration: Mapped[float | None] = mapped_column(Float, nullable=True)
+    album: Mapped['Album'] = relationship(
+        'Album', back_populates='tracks', lazy='noload'
+    )
 
     def __repr__(self):
         return f'<Track(title={self.title}, album_id={self.album_id}, number={self.number})>'
@@ -89,13 +113,15 @@ class AlbumStatus(Base):
 
     __tablename__ = 'album_statuses'
 
-    id : Mapped[int] = mapped_column(Integer, primary_key=True)
-    album_id : Mapped[int] = mapped_column(Integer, ForeignKey('albums.id', ondelete='CASCADE'), index=True)
-    time_stamp : Mapped[datetime] = mapped_column(DateTime, nullable=False, server_default=func.now(), default=func.now())
-    status : Mapped[Status] = mapped_column(Enum(Status), nullable=False)
-    success : Mapped[Success] = mapped_column(Enum(Success), nullable=False)
-    album : Mapped["Album"] = relationship('Album', back_populates='album_statuses', lazy='noload')
-
-
-
-
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    album_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey('albums.id', ondelete='CASCADE'), index=True
+    )
+    time_stamp: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now(), default=func.now()
+    )
+    status: Mapped[Status] = mapped_column(Enum(Status), nullable=False)
+    success: Mapped[Success] = mapped_column(Enum(Success), nullable=False)
+    album: Mapped['Album'] = relationship(
+        'Album', back_populates='album_statuses', lazy='noload'
+    )

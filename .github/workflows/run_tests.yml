@@ -48,6 +48,10 @@ jobs:
         run: |
           poetry run alembic upgrade head
 
+      - name: Run Ruff formatter check
+        run: |
+          poetry run ruff format . --check
+
       - name: Run Ruff linter check
         run: |
           poetry run ruff check .
